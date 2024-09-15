@@ -2,7 +2,7 @@
     "compilerOptions": {
       "strict": true,
       "esModuleInterop": true,
-      // other options...
+      "outDir": "./dist"
     }
   }
   
