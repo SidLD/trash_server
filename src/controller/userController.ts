@@ -1,23 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import mongoose from "mongoose";
 import userSchema from "../models/userSchema";
-import { IUser, StatusType, UserAttendance } from "../util/interface";
+import { IUser, StatusType } from "../util/interface";
 import bcrypt from 'bcrypt'
-import userAttendanceSchema from "../models/userAttendanceSchema";
-
+import jwt from 'jsonwebtoken'
 
 export const register = async (req: any, res: any) => {
     try {
         const { profile } = req.body;
         const params:IUser = req.body
 
-        if (!params.username.firstName || !params.username.lastName || !profile) {
+        if (!params.email || !params.username) {
           return res.status(400).json({ error: 'First name, and last name are required' });
         }
       
-        const user:{
-          email: string
-        } | null = await userSchema.findOne({email: params.contact, contact: params.contact})
+        const user:IUser | null = await userSchema.findOne({email: params.email, contact: params.username})
 
       if(user){
         return res.status(400).json({ error: 'User Already Exist' });
@@ -25,18 +22,14 @@ export const register = async (req: any, res: any) => {
       const password = params.password ? params.password.toString() : 'password';
       const hashedPassword = await bcrypt.hash(password, 10)
       const newUser = await userSchema.create({
-        username:{
-          firstName: params.username.firstName,
-          middleName: params.username.middleName,
-          lastName: params.username.lastName
-        },
-        contact: params.contact,
-        course: params.course,
+        username:params.username,
+        email: params.email,
+        firstName: params.firstName,
+        middleName: params.middleName,
+        lastName: params.lastName,
         role: params.role,
         password: hashedPassword,
-        profile: {
-          base64: profile
-        },
+        profile: profile ? profile : null,
         status: StatusType.PENDING
       })
       res.status(200).send({newUser})
@@ -47,155 +40,59 @@ export const register = async (req: any, res: any) => {
     }
 }
 
+export const login = async (req: any, res: any) => {
+  try {
+      const params:any = req.body
+      const user:IUser | null = await userSchema.findOne({ email: params.email })
+      if(user){
+          const isMatch = await bcrypt.compare(params.password, user.password.toString())
+          if(isMatch){
+              const payload = {
+                  id: user._id,
+                  role: user.role,
+                  firstName: user.firstName,
+                  lastName: user.lastName
+              };
+              jwt.sign(
+                  payload,
+                  `${process.env.JWT_SECRET}`,
+                  { expiresIn: "12hr" },
+                  async (err, token) => {
+                      if(err){
+                          res.status(400).send({message: err.message})
+                      }else{
+                          res.status(200).send({token: token})
+                      }
+                  }
+              )  
+          }else{
+              res.status(400).send({ok:false, data:"Incorrect Email or Password" })
+          }
+      }else{
+          res.status(400).send({message:"Incorrect Email or Password" })
+      }
+  } catch (error: any) {
+      console.log(error.message)
+      res.status(400).send({message:"Invalid Data or Email Already Taken"})
+  }
+}
+
 export const getUsers = async (req: any, res: any) => {
     try {
         const users = await userSchema.find({}).select('-password');
         res.status(200).send(JSON.stringify(users))
-
     } catch (error: any) {
         console.log(error.message)
         res.status(400).send({message:"Invalid Data or Email Already Taken"})
     }
 }
 
-export const attendanceLogin = async (req: any, res: any) => {
+export const updateUserStatus = async (req: any, res: any) => {
   try {
-      const { id, imgPath, loginType, datetime } = req.body;
-    
-      const user: IUser | null = await userSchema.findOne({_id: new mongoose.Types.ObjectId(id)})
-      if(!user){
-        return res.status(400).json({ error: 'User Does Not Exist' });
-      }
+      const {_id, status} = req.body;
 
-      if(user.status == StatusType.PENDING){
-        return res.status(400).json({ error: 'User is still Pending' });
-      }
-      
-      const now = new Date();
-      const startOfToday = new Date(now.setHours(0, 0, 0, 0));
-      const endOfToday = new Date(now.setHours(23, 59, 59, 999));
-
-      const record: UserAttendance | null = await userAttendanceSchema.findOne({
-        user: {
-          _id:  new mongoose.Types.ObjectId(id)
-        },
-        date: {
-          $gte: startOfToday,
-          $lte: endOfToday,
-        }
-      })
-
-      let attendanceRecord : UserAttendance | null = null;
-
-      if(record){
-        if(loginType == 'TIME_IN' ){
-          if(!record.timeIn){
-            attendanceRecord = await userAttendanceSchema.findOneAndUpdate({
-              _id: new mongoose.Types.ObjectId(record._id)
-            }, {
-              timeInImg: imgPath,
-              timeIn: datetime
-            },
-            {new :true}
-            )
-          }else{
-            return res.status(400).json({ error: 'User Already Checked In' });
-          }
-        }else {
-            attendanceRecord = await userAttendanceSchema.findOneAndUpdate({
-              _id: new mongoose.Types.ObjectId(record._id)
-            }, {
-              timeOutImg: imgPath,
-              timeOut: datetime
-            },
-            {new :true}
-          )
-        }
-      }else{
-        if(loginType == 'TIME_IN'){
-          attendanceRecord = await userAttendanceSchema.create({
-            timeInImg: imgPath,
-            loginType: loginType,
-            user: {
-              _id:  new mongoose.Types.ObjectId(id)
-            },
-            timeIn: datetime
-          })
-        }else if(loginType == 'TIME_OUT'){
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          attendanceRecord = await userAttendanceSchema.create({
-            timeOutImg: imgPath,
-            loginType: loginType,
-            user: {
-              _id:  new mongoose.Types.ObjectId(id)
-            },
-            timeOut: datetime
-          })
-        }
-      }
-     
-
-  } catch (error: any) {
-      console.log(error.message)
-      res.status(400).send({message:"Invalid Data or Email Already Taken"})
-  }
-}
-
-export const getAttendanceLogin = async (req: any, res: any) => {
-  try {
-      const { datetime } = req.query;
-      const now = new Date(datetime);
-      const startOfToday = new Date(now.setHours(0, 0, 0, 0));
-      const endOfToday = new Date(now.setHours(23, 59, 59, 999));
-
-      const attendanceRecords: UserAttendance[] = await userAttendanceSchema.find({
-        date: {
-          $gte: startOfToday,
-          $lte: endOfToday,
-        },
-        
-      }).populate('user')
-      .sort({_id: 1})
-      return res.status(200).send({data: attendanceRecords})
-
-  } catch (error: any) {
-      console.log(error.message)
-      res.status(400).send({message:"Invalid Data or Email Already Taken"})
-  }
-}
-
-export const getUserAttendance = async (req: any, res: any) => {
-  try {
-      const {user, datetime} = req.query;
-
-      const condition:any = {
-        _id: new mongoose.Types.ObjectId(user),
-      }
-
-      if(datetime){
-        const now = new Date(datetime);
-        const startOfToday = new Date(now.setHours(0, 0, 0, 0));
-        const endOfToday = new Date(now.setHours(23, 59, 59, 999));
-        condition.date = {
-          $gte: startOfToday,
-          $lte: endOfToday,
-        }
-      }
-      console.log(condition)
-      const attendances = await userAttendanceSchema.find(condition).sort({createdAt: -1}).populate('user')
-      res.status(200).send(JSON.stringify(attendances))
-  } catch (error: any) {
-      console.log(error.message)
-      res.status(400).send({message:"Invalid Data or Email Already Taken"})
-  }
-}
-
-export const approveUser = async (req: any, res: any) => {
-  try {
-      const {user, status} = req.body;
-
-     if(user && status){
-      const data = userSchema.updateOne({ _id: new mongoose.Types.ObjectId(user)}, {
+     if(_id && status){
+      const data = userSchema.updateOne({ _id: new mongoose.Types.ObjectId(_id)}, {
         status: status.toUpperCase()
       })
       res.status(200).send(JSON.stringify(data))

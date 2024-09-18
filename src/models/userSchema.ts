@@ -12,13 +12,12 @@ const profileSchema = new Schema<Iimg>(
     path: String,
     name: String,
     fullPath: String,
-    base64: String,  
   },
   { timestamps: true }
 );
 
 enum RoleType {
-  USER = "USER",
+  CONTRIBUTOR = "CONTRIBUTOR",
   ADMIN = "ADMIN"
 }
 
@@ -30,20 +29,15 @@ enum StatusType {
 
 const userSchema = new Schema<IUser>(
   {
-    username: {
-      firstName: { type: String, required: true },
-      lastName: { type: String, required: true },
-      middleName: { type: String }, 
-    },
+    username:  { type: String, required: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    middleName: { type: String }, 
     password: {
       type: String,
       required: false, 
     },
-    contact: {
-      type: String,
-      required: true,
-    },
-    course: {
+    email: {
       type: String,
       required: true,
     },
@@ -51,7 +45,7 @@ const userSchema = new Schema<IUser>(
       type: String, 
       enum: Object.values(RoleType),
       required: true,
-      default: RoleType.USER
+      default: RoleType.CONTRIBUTOR
     },
     status: {
       type: String, 

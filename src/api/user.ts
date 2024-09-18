@@ -1,15 +1,13 @@
 import express from 'express'
 import dotenv from 'dotenv'
-import { attendanceLogin, getAttendanceLogin, getUsers, register, getUserAttendance, approveUser } from '../controller/userController';
+import {  getUsers, register, updateUserStatus } from '../controller/userController';
+import { verifyToken } from '../util/verify';
 dotenv.config()
 const userAPI = express()
 
 userAPI.post('/register', register);
-userAPI.get('/users', getUsers);
-userAPI.post('/attendance', attendanceLogin);
-userAPI.get('/attendance', getAttendanceLogin);
-userAPI.get('/attendance/user', getUserAttendance);
-userAPI.get('/user/status', approveUser);
+userAPI.get('/users', verifyToken ,getUsers);
+userAPI.put('/user/status', verifyToken, updateUserStatus);
 
 
 export default userAPI

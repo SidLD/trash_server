@@ -1,17 +1,20 @@
 
 export interface IUser {
     _id: string | undefined,
-    profile: Iimg,
-    username:{
-        firstName: string,
-        middleName?: string,
-        lastName: string,
-    },
-    contact: string,
-    course: string,
-    role: string ,
-    password: string | undefined,
+    profile?: Iimg,
+    username:string,
+    firstName: string,
+    middleName?: string,
+    lastName: string,
+    email: string,
+    role: RoleType ,
+    password: string,
     status: StatusType
+}
+
+export enum RoleType {
+    ADMIN = 'ADMIN',
+    CONTRIBUTOR = 'CONTRIBUTOR',
 }
 
 export enum StatusType {
@@ -27,16 +30,4 @@ export interface Iimg {
     name: string,
     imageType: string
     fullPath: string,
-    base64: string
-}
-
-export interface UserAttendance {
-    loginType: string
-    _id: string | undefined,
-    user: IUser,
-    timeInImg: Iimg,
-    timeOutImg: Iimg,
-    date: Date
-    timeIn: Date,
-    timeOut: Date,
 }
