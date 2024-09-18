@@ -8,58 +8,45 @@ const profileSchema = new Schema<Iimg>(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-    imageType: String,
-    path: String,
-    name: String,
-    fullPath: String,
+    imageType: { type: String },
+    path: { type: String },
+    name: { type: String },
+    fullPath: { type: String },
   },
   { timestamps: true }
 );
 
-enum RoleType {
-  CONTRIBUTOR = "CONTRIBUTOR",
-  ADMIN = "ADMIN"
-}
-
-enum StatusType {
-  PENDING = 'PENDING',
-  APPROVED = 'APPROVED',
-  DECLINED = 'DECLINED'
-}
-
 const userSchema = new Schema<IUser>(
   {
-    username:  { type: String, required: true },
+    username: { type: String, required: true },
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
-    middleName: { type: String }, 
-    password: {
-      type: String,
-      required: false, 
-    },
-    email: {
-      type: String,
-      required: true,
-    },
+    middleName: { type: String }, // Not required, can be null
+    password: { type: String, required: false }, // Optional field
+    email: { type: String, required: true },
+    
+    // Fixed `role` with enum
     role: {
-      type: String, 
-      enum: Object.values(RoleType),
-      required: true,
-      default: RoleType.CONTRIBUTOR
+      type: String,
+      enum: ['ADMIN', 'CONTRIBUTOR'], // Specify possible values
+      required: true, // Specify if it is required
     },
+
+    // Fixed `status` with enum
     status: {
-      type: String, 
-      enum: Object.values(StatusType),
+      type: String,
+      enum: ['PENDING', 'APPROVED', 'DECLINED'], // Specify possible values
       required: true,
-      default: StatusType.PENDING
     },
+
+    // Embedded profile schema
     profile: {
       type: profileSchema,
       required: false,
     },
   },
   {
-    timestamps: true,
+    timestamps: true, // Automatically manage createdAt and updatedAt fields
   }
 );
 

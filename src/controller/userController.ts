@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import mongoose from "mongoose";
 import userSchema from "../models/userSchema";
-import { IUser, StatusType } from "../util/interface";
+import { IUser } from "../util/interface";
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 
@@ -30,7 +30,7 @@ export const register = async (req: any, res: any) => {
         role: params.role,
         password: hashedPassword,
         profile: profile ? profile : null,
-        status: StatusType.PENDING
+        status: 'PENDING'
       })
       res.status(200).send({newUser})
 

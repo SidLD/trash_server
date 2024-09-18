@@ -7,20 +7,9 @@ export interface IUser {
     middleName?: string,
     lastName: string,
     email: string,
-    role: RoleType ,
+    role: 'ADMIN' | 'CONTRIBUTOR',
     password: string,
-    status: StatusType
-}
-
-export enum RoleType {
-    ADMIN = 'ADMIN',
-    CONTRIBUTOR = 'CONTRIBUTOR',
-}
-
-export enum StatusType {
-    PENDING = 'PENDING',
-    APPROVED = 'APPROVED',
-    DECLINED = 'DECLINED'
+    status: 'PENDING' | 'APPROVED' | 'DECLINED'
 }
 
 export interface Iimg {
