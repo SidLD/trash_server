@@ -6,6 +6,7 @@ dotenv.config()
 const userAPI = express()
 
 userAPI.post('/register', register);
+userAPI.post('/login', register);
 userAPI.get('/users', verifyToken ,getUsers);
 userAPI.put('/user/status', verifyToken, updateUserStatus);
 

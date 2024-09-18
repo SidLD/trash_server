@@ -55,7 +55,7 @@ const userSchema = new Schema<IUser>(
     },
     profile: {
       type: profileSchema,
-      required: true,
+      required: false,
     },
   },
   {
