@@ -14,7 +14,7 @@ export const register = async (req: any, res: any) => {
           return res.status(400).json({ error: 'First name, and last name are required' });
         }
       
-        const user:IUser | null = await userSchema.findOne({email: params.email, contact: params.username})
+        const user:IUser | null = await userSchema.findOne({email: params.email, username: params.username})
 
       if(user){
         return res.status(400).json({ error: 'User Already Exist' });
@@ -45,7 +45,11 @@ export const login = async (req: any, res: any) => {
       const params:any = req.body
       const user:IUser | null = await userSchema.findOne({ email: params.email })
       if(user){
+          if(user.status != 'APPROVED'){
+            return res.status(400).send({ok:false, data:"Account need Admin Approval" })
+          }
           const isMatch = await bcrypt.compare(params.password, user.password.toString())
+          console.log(user)
           if(isMatch){
               const payload = {
                   id: user._id,
@@ -79,7 +83,12 @@ export const login = async (req: any, res: any) => {
 
 export const getUsers = async (req: any, res: any) => {
     try {
-        const users = await userSchema.find({}).select('-password');
+        const {user} = req;
+        const users:IUser[] = await userSchema.find({
+          _id : {
+            $ne: new mongoose.Types.ObjectId(user.id)
+          }
+        }).select('-password');
         res.status(200).send(JSON.stringify(users))
     } catch (error: any) {
         console.log(error.message)
@@ -90,18 +99,44 @@ export const getUsers = async (req: any, res: any) => {
 export const updateUserStatus = async (req: any, res: any) => {
   try {
       const {_id, status} = req.body;
-
-     if(_id && status){
-      const data = userSchema.updateOne({ _id: new mongoose.Types.ObjectId(_id)}, {
-        status: status.toUpperCase()
-      })
-      res.status(200).send(JSON.stringify(data))
-     }else{
-      res.status(400).send({message:"User and Status are Required"})
-     }
+      const {user} = req;
+      if(user.role == 'ADMIN'){
+        if(_id && status){
+            const updatedUser = await userSchema.updateOne(
+              { _id: new mongoose.Types.ObjectId(_id) },
+              { status: status.toUpperCase() }
+            );
+          res.status(200).send(JSON.stringify(updatedUser))
+        }else{
+          res.status(400).send({message:"User and Status are Required"})
+        }
+      }else{
+        res.status(403).send({message:"Forbidden"})
+      }
   } catch (error: any) {
       console.log(error.message)
       res.status(400).send({message:"Invalid Data"})
   }
 }
 
+export const deleteUser = async (req: any, res: any) => {
+  try {
+      const {_id} = req.body;
+      const {user} = req;
+      if(user.role == 'ADMIN'){
+        if(_id){
+          const updatedUser = await userSchema.deleteOne(
+            { _id: new mongoose.Types.ObjectId(_id) }
+          );
+          res.status(200).send(JSON.stringify(updatedUser))
+        }else{
+          res.status(400).send({message:"User ID are Required"})
+        }
+      }else{
+        res.status(403).send({message:"Forbidden"})
+      }
+  } catch (error: any) {
+      console.log(error.message)
+      res.status(400).send({message:"Invalid Data"})
+  }
+}
