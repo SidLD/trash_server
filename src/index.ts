@@ -3,18 +3,15 @@ import bodyParser from 'body-parser';
 import userAPI from './api/user';
 import cors from 'cors';
 import mongoose from 'mongoose';
-import http from 'http'; // Import http module
-import { Server } from 'socket.io'; // Import socket.io
+import http, { createServer } from 'http'; 
+import { emitNotification, initializeSocket } from './util/socket';
 
 const app = express();
+const server = createServer(app);
+
+// Initialize Socket.IO
+const io = initializeSocket(server);
 const port = process.env.PORT || 8888;
-
-// Create an HTTP server
-const server = http.createServer(app);
-
-// Attach Socket.IO to the HTTP server
-const io = new Server(server);
-
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 app.use(bodyParser.json(), urlencodedParser);
 
@@ -32,23 +29,10 @@ try {
 } catch (error) {
   console.log(error);
 }
+setTimeout(() => {
 
-// Socket.IO logic
-io.on('connection', (socket) => {
-  console.log('A user connected');
-  
-  socket.on('disconnect', () => {
-    console.log('User disconnected');
-  });
-
-  // Handle custom events
-  socket.on('message', (data) => {
-    console.log('Message received:', data);
-    // Broadcast the message to all clients
-    io.emit('message', data);
-  });
-});
-
+  emitNotification({})
+}, 5000)
 // Start the server
 server.listen(port, () => {
   console.log(`> Ready on http://localhost:${port}`);
