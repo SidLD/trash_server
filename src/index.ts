@@ -5,21 +5,26 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import http, { createServer } from 'http'; 
 import { emitNotification, initializeSocket } from './util/socket';
+import foodwasteAPI from './api/food-waste';
+import statAPI from './api/stat';
 
 const app = express();
 const server = createServer(app);
 
 // Initialize Socket.IO
 const io = initializeSocket(server);
-const port = process.env.PORT || 8888;
+const port = process.env.PORT || 8080;
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 app.use(bodyParser.json(), urlencodedParser);
 
 const corsOptions = {
   origin: process.env.FRONT_URI,
 };
+console.log(corsOptions)
 app.use(cors(corsOptions));
 app.use(userAPI);
+app.use(foodwasteAPI)
+app.use(statAPI)
 
 // Database
 try {
