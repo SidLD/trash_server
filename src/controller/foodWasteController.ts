@@ -5,6 +5,7 @@ import { IFoodWaste, IUser } from "../util/interface";
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import FoodWaste from "../models/foodWasteSchema";
+import { emitNotification } from "../util/socket";
 
 export const createRecord = async (req: any, res: any) => {
     try {
@@ -12,7 +13,6 @@ export const createRecord = async (req: any, res: any) => {
         const newFoodWaste = new FoodWaste({...body,userId:user.id});
 
         await newFoodWaste.save();
-
         return res.status(200).json({
             message: 'Food waste record created successfully',
             data: newFoodWaste,
@@ -78,7 +78,9 @@ export const updateStatus = async (req: any, res: any) => {
                 message: 'Food waste record not found',
             });
         }
-
+        if(status){
+            await emitNotification(updatedRecord);
+        }
         return res.status(200).json({
             message: 'Status updated successfully',
             data: updatedRecord,

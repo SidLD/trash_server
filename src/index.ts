@@ -35,7 +35,6 @@ try {
   console.log(error);
 }
 setTimeout(() => {
-
   emitNotification({})
 }, 5000)
 // Start the server

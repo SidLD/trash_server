@@ -145,9 +145,7 @@ export const getUserSetting = async (req: any, res: any) => {
   try {
       const {user} = req;
       const data:IUser = await userSchema.findOne({
-        _id : {
-          $ne: new mongoose.Types.ObjectId(user.id)
-        }
+        _id : new mongoose.Types.ObjectId(user.id)
       }).select('-password');
       res.status(200).send(JSON.stringify(data))
   } catch (error: any) {
@@ -159,9 +157,7 @@ export const getUserSetting = async (req: any, res: any) => {
 export const updateUserSettings = async (req: any, res: any) => {
     try {
         const { user } = req;
-        console.log('asd')
         const { username, email, firstName, lastName, middleName, currentPassword, newPassword } = req.body;
-
         const updateData: Partial<IUser> = {
             username,
             email,
@@ -173,21 +169,22 @@ export const updateUserSettings = async (req: any, res: any) => {
         // Find the user
         const foundUser = await userSchema.findById(user.id).select('+password'); // Include password to compare
 
-        // If a new password is provided, verify current password and update it
-        if (newPassword && foundUser) {
-            const isMatch = await bcrypt.compare(currentPassword, foundUser.password); // Ensure this method exists in your schema
+        if(foundUser){
+            if (newPassword && foundUser) {
+              const isMatch = await bcrypt.compare(currentPassword, foundUser.password); // Ensure this method exists in your schema
 
-            if (!isMatch) {
-                return res.status(400).json({ message: "Current password is incorrect" });
-            }
+              if (!isMatch) {
+                  return res.status(400).json({ message: "Current password is incorrect" });
+              }
 
-            updateData.password = await bcrypt.hash(newPassword, 10)
+              updateData.password = await bcrypt.hash(newPassword, 10)
+          }
+
+          // Update user settings
+          const updatedUser = await userSchema.findByIdAndUpdate(foundUser.id, updateData).select('-password');
+
+          res.status(200).json(updatedUser);
         }
-
-        // Update user settings
-        const updatedUser = await userSchema.findByIdAndUpdate(user.id, updateData, { new: true, runValidators: true }).select('-password');
-
-        res.status(200).json(updatedUser);
     } catch (error: any) {
         console.log(error.message);
         res.status(400).json({ message: "Invalid data" });

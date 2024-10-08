@@ -16,15 +16,8 @@ console.log(allowedOrigins)
 export const initializeSocket = (server:any) => {
   io = new SocketIOServer(server, {
     cors: {
-      origin: (origin:any, callback) => {
-        if (allowedOrigins.includes(origin) || !origin) {
-          callback(null, true);
-        } else {
-          callback(new Error('Not allowed by CORS'));
-        }
-      },
+      origin: allowedOrigins,
       methods: ['GET', 'POST'],
-      credentials: true,
     },
   });
 
@@ -33,9 +26,9 @@ export const initializeSocket = (server:any) => {
   })
   .on('connection', (socket:any) => {
     console.log(chalk.blue('New Socket connected'))
-    socket.on(`new-data`, async () => {
-      console.log("Nw Data");
-      socket.broadcast.emit(`update-data`);
+    socket.on(`new-data`, async (data: any) => {
+      console.log("New Data", JSON.stringify(data));
+      socket.broadcast.emit(`update-data`, JSON.stringify(data));
     });
 
     socket.on('disconnect', async () => {
