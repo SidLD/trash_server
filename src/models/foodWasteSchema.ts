@@ -20,6 +20,7 @@ interface IFoodWaste extends Document {
   otherDisposalMethod?: string;
   environmentalConditions?: string;
   relevantEvents?: string;
+  otherRelevantEvents?: string;
   additionalComments?: string;
   status: string,
   userId: mongoose.Schema.Types.ObjectId; 
@@ -46,6 +47,7 @@ const foodWasteSchema = new Schema<IFoodWaste>(
     otherDisposalMethod: { type: String },
     environmentalConditions: { type: String },
     relevantEvents: { type: String },
+    otherRelevantEvents: { type: String },
     additionalComments: { type: String },
     status: {
         type: String,

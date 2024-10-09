@@ -46,7 +46,7 @@ export const login = async (req: any, res: any) => {
       const user:IUser | null = await userSchema.findOne({ email: params.email })
       if(user){
           if(user.status != 'APPROVED'){
-            return res.status(400).send({ok:false, data:"Account need Admin Approval" })
+            return res.status(400).send({ok:false, message:"Account need Admin Approval" })
           }
           const isMatch = await bcrypt.compare(params.password, user.password.toString())
           if(isMatch){
@@ -70,7 +70,7 @@ export const login = async (req: any, res: any) => {
                   }
               )  
           }else{
-              res.status(400).send({ok:false, data:"Incorrect Email or Password" })
+              res.status(400).send({ok:false, message:"Incorrect Email or Password" })
           }
       }else{
           res.status(400).send({message:"Incorrect Email or Password" })

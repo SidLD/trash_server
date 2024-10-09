@@ -19,6 +19,7 @@ export interface IFoodWaste {
     otherDisposalMethod?: string;
     environmentalConditions?: string;
     relevantEvents?: string;
+    otherRelevantEvents?: string;
     additionalComments?: string;
     user: IUser; // Reference back to the user
 }

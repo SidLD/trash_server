@@ -93,3 +93,27 @@ export const updateStatus = async (req: any, res: any) => {
         });
     }
 };
+
+export const deleteRecord = async (req: any, res: any) => {
+    try {
+        const {recordId} = req.body
+        if(!recordId){
+            return res.status(400).json({
+                message: 'recordId is required',
+            });
+        }
+        const foodWasteRecords = await FoodWaste.findByIdAndDelete(recordId)
+
+        // Respond with the records
+        return res.status(200).json({
+            message: 'Food waste Deleted successfully',
+            data: foodWasteRecords,
+        });
+    } catch (error:any) {
+        console.error(error);
+        return res.status(500).json({
+            message: 'An error occurred while deleting food waste record',
+            error: error.message,
+        });
+    }
+};
