@@ -29,6 +29,7 @@ export const createRecord = async (req: any, res: any) => {
 export const getRecords = async (req: any, res: any) => {
     try {
         const foodWasteRecords = await FoodWaste.find()
+        .sort({ dateOfWaste: -1 })
         .populate({
             path: 'userId', 
             select: '-password', 
