@@ -14,7 +14,6 @@ export interface IFoodWaste {
     temperature: string;
     mealType: string;
     wasteStage: string;
-    preventable: string;
     disposalMethod: string;
     otherDisposalMethod?: string;
     environmentalConditions?: string;

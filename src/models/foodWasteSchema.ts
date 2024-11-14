@@ -15,7 +15,6 @@ interface IFoodWaste extends Document {
   temperature: string;
   mealType: string;
   wasteStage: string;
-  preventable: string;
   disposalMethod: string;
   otherDisposalMethod?: string;
   environmentalConditions?: string;
@@ -42,7 +41,6 @@ const foodWasteSchema = new Schema<IFoodWaste>(
     temperature: { type: String, required: true },
     mealType: { type: String, required: true },
     wasteStage: { type: String, required: true },
-    preventable: { type: String, required: true },
     disposalMethod: { type: String, required: true },
     otherDisposalMethod: { type: String },
     environmentalConditions: { type: String },
