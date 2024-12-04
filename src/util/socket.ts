@@ -31,6 +31,11 @@ export const initializeSocket = (server:any) => {
       socket.broadcast.emit(`update-data`, JSON.stringify(data));
     });
 
+    socket.on(`create-notification`, async (data: any) => {
+      console.log("New Data", JSON.stringify(data));
+      socket.broadcast.emit(`notification-${data.user._id}`, JSON.stringify(data));
+    });
+
     socket.on('disconnect', async () => {
       console.log(chalk.red(`Socket is disconnected`));
     });
@@ -58,6 +63,32 @@ export const emitNotification = async (data:any) => {
       });
     }).then(() => {
       SocketInstance.emit(`new-data`, data, (response:any) => {
+        console.log('Response from server:', response);
+        SocketInstance.disconnect()
+      });
+    });  
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const emitContributorNotification = async (data:any) => {
+  try {
+    const SocketInstance = IoClient(SERVER_URI, {
+      auth: { 
+        token: SOCKET_TOKEN
+       },
+      withCredentials: true,
+    });
+    await new Promise<void>((resolve, reject) => {
+      SocketInstance.on('connect', () => {
+        resolve();
+      });
+      SocketInstance.on('connect_error', (err) => {
+        reject(err);
+      });
+    }).then(() => {
+      SocketInstance.emit(`create-notification`, data, (response:any) => {
         console.log('Response from server:', response);
         SocketInstance.disconnect()
       });

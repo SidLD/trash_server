@@ -45,3 +45,13 @@ export interface Iimg {
     imageType: string;
     fullPath: string;
 }
+
+export interface Inotification {
+    _id: string | undefined;
+    user: IUser; 
+    admin: IUser; 
+    path: string;
+    title: string;
+    description: string;
+    isRead: boolean;
+}
