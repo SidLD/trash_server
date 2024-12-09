@@ -7,6 +7,7 @@ import http, { createServer } from 'http';
 import { emitNotification, initializeSocket } from './util/socket';
 import foodwasteAPI from './api/food-waste';
 import statAPI from './api/stat';
+import notificatioAPI from './api/notification';
 
 const app = express();
 const server = createServer(app);
@@ -25,6 +26,7 @@ app.use(cors(corsOptions));
 app.use(userAPI);
 app.use(foodwasteAPI)
 app.use(statAPI)
+app.use(notificatioAPI)
 
 // Database
 try {

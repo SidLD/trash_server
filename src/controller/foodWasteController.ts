@@ -6,6 +6,7 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import FoodWaste from "../models/foodWasteSchema";
 import { emitContributorNotification, emitNotification } from "../util/socket";
+import { createContriNotification } from "./notificationController";
 
 export const createRecord = async (req: any, res: any) => {
     try {
@@ -65,7 +66,7 @@ export const updateStatus = async (req: any, res: any) => {
             });
         }
 
-        const updatedRecord = await FoodWaste.findByIdAndUpdate(
+        const updatedRecord:any = await FoodWaste.findByIdAndUpdate(
             {_id: id},
             { status },
             { new: true }
@@ -81,12 +82,14 @@ export const updateStatus = async (req: any, res: any) => {
         }
         if(status){
             await emitNotification(updatedRecord);
-            await emitContributorNotification({
-                admin: req.user.id,
-                user: updatedRecord.userId,
-                title: "Submission Approved: Food Waste Data",
-                description: "Your food waste data submission has been reviewed and approved"
-            })
+            if(status == 'APPROVED'){
+                await createContriNotification(
+                    req.user.id,
+                    "Submission Approved: Food Waste Data",
+                    "Your food waste data submission has been reviewed and approved", 
+                    updatedRecord.userId._id, 
+                    '/contributor/data-entry')
+            }
         }
         return res.status(200).json({
             message: 'Status updated successfully',

@@ -4,12 +4,13 @@ import Notification from "../models/notificationSchema";
 import { emitContributorNotification } from "../util/socket";
 
 // Create a new notification
-export const createNotification = async (admin: string, description: string, title: string, user: string, path: string) => {
+export const createContriNotification = async (admin: string, description: string, title: string, user: string, path: string) => {
   try {
     const newNotification = new Notification({ admin, description, title, user, path });
     const savedNotification = await newNotification.save();
     if(savedNotification){
-        emitContributorNotification({ admin, description, title, user, path })
+        const notificationId = savedNotification._id;
+        emitContributorNotification({ _id:notificationId, admin, description, title, user, path })
     }
     
   } catch (error) {
@@ -32,11 +33,11 @@ export const getAllNotifications = async (req: any, res: any) => {
 // Update notification `isRead` status
 export const updateNotificationStatus = async (req: Request, res: Response) => {
   try {
-    const { _id } = req.params;
+    const { id } = req.params;
     const { isRead } = req.body;
 
     const updatedNotification = await Notification.findByIdAndUpdate(
-        _id,
+      {_id:id},
       { isRead },
       { new: true }
     );
