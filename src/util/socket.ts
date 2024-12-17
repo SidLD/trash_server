@@ -16,7 +16,13 @@ console.log(allowedOrigins)
 export const initializeSocket = (server:any) => {
   io = new SocketIOServer(server, {
     cors: {
-      origin: allowedOrigins,
+      origin: (origin: any, callback) => {
+        if (allowedOrigins.includes(origin) || !origin) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
       methods: ['GET', 'POST'],
     },
   });
