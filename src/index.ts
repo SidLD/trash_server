@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 import userAPI from './api/user';
 import cors from 'cors';
 import mongoose from 'mongoose';
-import http, { createServer } from 'http'; 
+import _http, { createServer } from 'http'; 
 import { emitNotification, initializeSocket } from './util/socket';
 import foodwasteAPI from './api/food-waste';
 import statAPI from './api/stat';
